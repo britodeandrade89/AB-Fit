@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AB Fit - Sistema de Treinos</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-red: #d32f2f;
+            --dark-red: #b71c1c;
+            --black: #121212;
+            --dark-gray: #1e1e1e;
+            --medium-gray: #2d2d2d;
+            --light-gray: #424242;
+            --text-light: #f5f5f5;
+            --text-gray: #b0b0b0;
+            --success: #4caf50;
+            --warning: #ff9800;
+            --danger: #f44336;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--black);
+            color: var(--text-light);
+            min-height: 100vh;
+        }
+        
+        /* Header */
+        .app-header {
+            background: linear-gradient(to right, var(--primary-red), var(--dark-red));
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .search-bar {
+            flex: 1;
+            max-width: 300px;
+            margin: 0 20px;
+        }
+        
+        .search-bar input {
+            width: 100%;
+            padding: 8px 15px;
+            border-radius: 20px;
+            border: none;
+            background-color: rgba(255,255,255,0.2);
+            color: white;
+        }
+        
+        .search-bar input::placeholder {
+            color: rgba(255,255,255,0.7);
+        }
+        
+        /* Conteúdo principal */
+        .main-content {
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .content-section {
+            display: none;
+        }
+        
+        .content-section.active {
+            display: block;
+        }
+        
+        /* Menu Principal - Lista de Clientes */
+        .clients-list {
+            margin-top: 20px;
+        }
+        
+        .client-item {
+            background-color: var(--dark-gray);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .client-item:hover {
+            background-color: var(--medium-gray);
+            transform: translateX(5px);
+        }
+        
+        .client-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        .client-info h3 {
+            margin-bottom: 5px;
+        }
+        
+        .client-info p {
+            color: var(--text-gray);
+            font-size: 0.9rem;
+        }
+        
+        /* Perfil do Cliente */
+        .profile-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--light-gray);
+        }
+        
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin: 0 auto 15px;
+        }
+        
+        .training-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .training-btn {
+            background: linear-gradient(to right, var(--primary-red), var(--dark-red));
+            border: none;
+            border-radius: 10px;
+            padding: 15px;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .training-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        .running-section {
+            background-color: var(--dark-gray);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .running-section h3 {
+            margin-bottom: 15px;
+            color: var(--primary-red);
+        }
+        
+        .view-running-btn {
+            background: linear-gradient(to right, var(--primary-red), var(--dark-red));
+            border: none;
+            border-radius: 10px;
+            padding: 12px 20px;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        /* Calendário */
+        .calendar-container {
+            background-color: var(--dark-gray);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .calendar-header {
+            text-align: center;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        
+        .calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+        }
+        
+        .day-header {
+            text-align: center;
+            padding: 10px;
+            font-weight: bold;
+            background-color: var(--medium-gray);
+            border-radius: 5px;
+        }
+        
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 5px;
+            background-color: var(--medium-gray);
+            position: relative;
+        }
+        
+        .day-number {
+            font-weight: bold;
+        }
+        
+        .day-training {
+            font-size: 0.7rem;
+            margin-top: 3px;
+            text-align: center;
+        }
+        
+        .day-status {
+            position: absolute;
+            top: 3px;
+            right: 3px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        
+        .status-missed {
+            background-color: var(--danger);
+        }
+        
+        .status-scheduled {
+            background-color: var(--warning);
+        }
+        
+        .status-completed {
+            background-color: var(--success);
+        }
+        
+        /* Treino de Corrida */
+        .running-workouts {
+            margin-top: 20px;
+        }
+        
+        .workout-item {
+            background-color: var(--dark-gray);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-left: 4px solid var(--primary-red);
+        }
+        
+        .workout-item:hover {
+            background-color: var(--medium-gray);
+            transform: translateX(5px);
+        }
+        
+        .workout-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .workout-title {
+            font-weight: bold;
+            color: var(--primary-red);
+        }
+        
+        .workout-date {
+            color: var(--text-gray);
+            font-size: 0.9rem;
+        }
+        
+        .workout-details {
+            color: var(--text-gray);
+            font-size: 0.9rem;
+        }
+        
+        /* Detalhes do Treino */
+        .workout-detail {
+            background-color: var(--dark-gray);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .workout-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 15px 0;
+        }
+        
+        .stat-item {
+            background-color: var(--medium-gray);
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+        
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-gray);
+        }
+        
+        /* Navegação */
+        .back-button {
+            background: none;
+            border: none;
+            color: var(--primary-red);
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-bottom: 20px;
+        }
+        
+        /* Checkboxes para treinos */
+        .exercise-list {
+            margin-top: 15px;
+        }
+        
+        .exercise-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 10px;
+            border-bottom: 1px solid var(--light-gray);
+        }
+        
+        .exercise-checkbox {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid var(--text-gray);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        
+        .exercise-checkbox.checked {
+            background-color: var(--success);
+            border-color: var(--success);
+        }
+        
+        .exercise-checkbox.checked::after {
+            content: "✓";
+            color: white;
+            font-weight: bold;
+        }
+        
+        .exercise-details {
+            flex: 1;
+        }
+        
+        .exercise-details h4 {
+            margin-bottom: 5px;
+        }
+        
+        .exercise-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 0.9rem;
+            color: var(--text-gray);
+        }
+        
+        /* Botão de Periodização */
+        .periodization-btn {
+            background: linear-gradient(to right, #2196F3, #1976D2);
+            border: none;
+            border-radius: 10px;
+            padding: 12px 20px;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 15px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        /* Tabela de Periodização */
+        .periodization-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        .periodization-table th, .periodization-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--light-gray);
+        }
+        
+        .periodization-table th {
+            background-color: var(--medium-gray);
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="app-header">
+        <div class="logo">
+            <h1>AB Fit</h1>
+        </div>
+        <div class="search-bar">
+            <input type="text" placeholder="Procurar">
+        </div>
+        <div class="user-info">
+            <span>Personal Trainer</span>
+        </div>
+    </header>
+    
+    <!-- Conteúdo principal -->
+    <main class="main-content">
+        <!-- Menu Principal -->
+        <section id="menu-principal" class="content-section active">
+            <h2>Menu Principal</h2>
+            <div class="clients-list" id="clients-list">
+                <!-- Clientes serão carregados via JavaScript -->
+            </div>
+        </section>
+        
+        <!-- Perfil do Cliente -->
+        <section id="client-profile" class="content-section">
+            <!-- Conteúdo será carregado dinamicamente -->
+        </section>
+        
+        <!-- Treino de Corrida -->
+        <section id="running-training" class="content-section">
+            <!-- Conteúdo será carregado dinamicamente -->
+        </section>
+        
+        <!-- Detalhes do Treino de Corrida -->
+        <section id="running-detail" class="content-section">
+            <!-- Conteúdo será carregado dinamicamente -->
+        </section>
+        
+        <!-- Treino A -->
+        <section id="training-a" class="content-section">
+            <!-- Conteúdo será carregado dinamicamente -->
+        </section>
+        
+        <!-- Treino B -->
+        <section id="training-b" class="content-section">
+            <!-- Conteúdo será carregado dinamicamente -->
+        </section>
+        
+        <!-- Periodização -->
+        <section id="periodization" class="content-section">
+            <!-- Conteúdo será carregado dinamicamente -->
+        </section>
+    </main>
+
+    <script>
+        // Dados dos clientes
+        const clientsData = [
+            {
+                name: "André Brito",
+                email: "britodeandrade@gmail.com",
+                photo: "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/WsTwhcQeE99iAkUHmCmn/pub/3Zy4n6ZmWp9DW98VtXpO.jpeg",
+                age: 36,
+                maxFC: 184
+            },
+            {
+                name: "Marcelly Bispo",
+                email: "marcellybispo92@gmail.com",
+                photo: "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/WsTwhcQeE99iAkUHmCmn/pub/2VWhNV4eSyDNkwEzPGvq.jpeg",
+                age: 33,
+                maxFC: 187
+            },
+            {
+                name: "Liliane Torres",
+                email: "lilicatorres@gmail.com",
+                photo: "",
+                age: "",
+                maxFC: ""
+            },
+            {
+                name: "Marcia Brito",
+                email: "andrademarcia.ucam@gmail.com",
+                photo: "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/WsTwhcQeE99iAkUHmCmn/pub/huS3I3wDTHbXGY1EuLjf.jpg",
+                age: 59,
+                maxFC: 161
+            }
+        ];
+
+        // Dados de treinos de corrida
+        const runningWorkouts = [
+            {
+                id: 1,
+                name: "Treino 1 - FARTLEK",
+                description: "5' AQ + 20' CO alternado entre CA : CO + 5' REC",
+                date: "10/09/2025",
+                duration: "30min",
+                speed: "8,5 Km/h",
+                pace: "7:00 min/km",
+                fcTarget: "147 BPM",
+                fcMax: "184 BPM"
+            },
+            {
+                id: 2,
+                name: "Treino 2 - INTERVALADO",
+                description: "5' AQ + (6 BLOCOS) 2' CO : 1'30'' REC + 3' REC",
+                date: "12/09/2025",
+                duration: "30min",
+                speed: "9,5 Km/h",
+                pace: "6:19 min/km",
+                fcTarget: "156,4 BPM",
+                fcMax: "184 BPM"
+            },
+            {
+                id: 3,
+                name: "Treino 3 - LONGÃO",
+                description: "5' AQ + 3 KM DE CO CONTÍNUA + 5' REC",
+                date: "17/09/2025",
+                duration: "30min",
+                speed: "8,5 Km/h",
+                pace: "7:04 min/km",
+                fcTarget: "147,2 BPM",
+                fcMax: "184 BPM"
+            },
+            {
+                id: 4,
+                name: "Treino 4 - RITMO",
+                description: "5' AQ + (4 BLOCOS) 500 metros CO : 2'30'' REC + 3' REC",
+                date: "19/09/2025",
+                duration: "26:30min",
+                speed: "11 Km/h",
+                pace: "5:27 min/km",
+                fcTarget: "165,6 BPM",
+                fcMax: "184 BPM"
+            },
+            {
+                id: 5,
+                name: "Treino 5 - TIROS",
+                description: "5' AQ + (8 TIROS) 200 metros CO : 2'30 REC + 3' REC",
+                date: "20/09/2025",
+                duration: "32min",
+                speed: "15 Km/h",
+                pace: "4:00 min/km",
+                fcTarget: "174,8 BPM",
+                fcMax: "184 BPM"
+            }
+        ];
+
+        // Dados COMPLETOS de treinos A e B (baseado nos CSVs)
+        const trainingData = {
+            'A': [
+                { exercise: 'Agachamento parcial no Smith', series: 4, reps: 10, load: 15, method: 'Método Simples (10 RM)', recovery: 'REC 30"' },
+                { exercise: 'Agachamento Livre com HBC', series: 4, reps: 10, load: 14, method: 'Método Simples (10 RM)', recovery: 'REC 30"' },
+                { exercise: 'Cadeira extensora', series: 4, reps: 10, load: 3, method: 'Método Simples (10 RM)', recovery: 'REC 30"' },
+                { exercise: 'Supino inclinado com HBC (CONJUGADO 1)', series: 3, reps: 10, load: 12, method: 'Método Simples (10 RM)', recovery: 'REC 30"' },
+                { exercise: 'Extensão de cotovelos no solo (CONJUGADO 1)', series: 3, reps: 10, load: 0, method: 'Método Simples (10 RM)', recovery: 'REC 30"' },
+                { exercise: 'Crucifixo aberto na máquina', series: 6, reps: 10, load: 8, method: 'Método Simples (10 RM)', recovery: 'REC 30"' },
+                { exercise: 'Desenvolvimento aberto com HBC no banco 75º (CONJUGADO 2)', series: 4, reps: 10, load: 7, method: 'Método Simples (10 RM)', recovery: 'REC 30"' },
+                { exercise: 'Tríceps em pé no cross barra reta', series: 6, reps: 10, load: 6, method: 'Método Simples (10 RM)', recovery: 'REC 30"' }
+            ],
+            'B': [
+                { exercise: 'Agachamento sumô com HBC', series: 4, reps: 10, load: 22, method: 'Método Simples (10 RM)', recovery: 'REC 30"' },
+                { exercise: 'Stiff em pé com HBM', series: 4, reps: 10, load: 14, method: 'Método Simples (10 RM)', recovery: 'REC 30"' },
+                { exercise: 'Extensão de quadril com caneleira', series: 4, reps: 10, load: 7, method: 'Método Simples (10 RM)', recovery: 'REC 30"' },
+                { exercise: 'Remada curvada aberta com HBC (CONJUGADO 1)', series: 3, reps: 10, load: 8, method: 'Método Simples (10 RM)', recovery: 'REC 30"' },
+                { exercise: 'Crucifixo inverso curvado com HBC (CONJUGADO 1)', series: 3, reps: 10, load: 4, method: 'Método Simples (10 RM)', recovery: 'REC 30"' },
+                { exercise: 'Crucifixo inverso na máquina', series: 6, reps: 10, load: 6, method: 'Método Simples (10 RM)', recovery: 'REC 30"' },
+                { exercise: 'Puxada aberta no pulley alto', series: 4, reps: 10, load: 11, method: 'Método Simples (10 RM)', recovery: 'REC 30"' },
+                { exercise: 'Bíceps em pé no cross barra reta', series: 6, reps: 10, load: 10, method: 'Método Simples (10 RM)', recovery: 'REC 30"' }
+            ]
+        };
+
+        // Dados de periodização
+        const periodizationData = [
+            { semanas: '1ª e 2ª', fases: 'Adaptação/Hipertrofia', metodos: 'Método de execução Simples', repeticoes: '10', volume: '16 séries/grupo', intensidade: '70-75% 1RM', recuperacao: '60-90s' },
+            { semanas: '3ª e 4ª', fases: 'Adaptação/Hipertrofia', metodos: 'Método de execução Simples', repeticoes: '8-9', volume: '16 séries/grupo', intensidade: '70-75% 1RM', recuperacao: '60-90s' },
+            { semanas: '5ª e 6ª', fases: 'Força', metodos: 'Método de execução Simples + Rest-Pause', repeticoes: '6-7', volume: '14 séries/grupo', intensidade: '80-85% 1RM', recuperacao: '90-120s' },
+            { semanas: '7ª e 8ª', fases: 'Força', metodos: 'Método de execução Simples + Rest-Pause', repeticoes: '5-6', volume: '12 séries/grupo', intensidade: '80-85% 1RM', recuperacao: '90-120s' },
+            { semanas: '9ª e 10ª', fases: 'Força Máxima', metodos: 'Método de execução Simples + Pirâmide', repeticoes: '3 \\ 4 \\ 5', volume: '10 séries/grupo', intensidade: '85-90% 1RM', recuperacao: '120-180s' }
+        ];
+
+        // Estado da aplicação
+        let currentClient = null;
+        let currentWorkout = null;
+
+        // Elementos DOM
+        const contentSections = document.querySelectorAll('.content-section');
+        const clientsList = document.getElementById('clients-list');
+
+        // Inicialização
+        function init() {
+            loadClients();
+        }
+
+        // Carrega a lista de clientes
+        function loadClients() {
+            clientsList.innerHTML = '';
+            
+            clientsData.forEach(client => {
+                const clientItem = document.createElement('div');
+                clientItem.className = 'client-item';
+                clientItem.addEventListener('click', () => openClientProfile(client));
+                
+                clientItem.innerHTML = `
+                    <img src="${client.photo || 'https://via.placeholder.com/50'}" alt="${client.name}" class="client-avatar">
+                    <div class="client-info">
+                        <h3>${client.name}</h3>
+                        <p>${client.age} anos • FC Max: ${client.maxFC || 'N/A'}</p>
+                    </div>
+                `;
+                
+                clientsList.appendChild(clientItem);
+            });
+        }
+
+        // Abre o perfil do cliente
+        function openClientProfile(client) {
+            currentClient = client;
+            
+            const clientProfile = document.getElementById('client-profile');
+            clientProfile.innerHTML = `
+                <button class="back-button" onclick="showSection('menu-principal')">
+                    <i class="fas fa-arrow-left"></i> Voltar
+                </button>
+                
+                <div class="profile-header">
+                    <img src="${client.photo || 'https://via.placeholder.com/100'}" alt="${client.name}" class="profile-avatar">
+                    <h2>${client.name}</h2>
+                </div>
+                
+                <div class="training-buttons">
+                    <button class="training-btn" onclick="openTraining('A')">
+                        TREINO A<br>
+                        <small>Check In Treino A</small>
+                    </button>
+                    <button class="training-btn" onclick="openTraining('B')">
+                        TREINO B<br>
+                        <small>Check In Treino B</small>
+                    </button>
+                </div>
+                
+                <div class="running-section">
+                    <h3>Treinos de Corrida</h3>
+                    <p>Clique no botão abaixo para ver os treinos de corrida e calendário</p>
+                    <button class="view-running-btn" onclick="openRunningTraining()">
+                        <i class="fas fa-running"></i> Ver Treinos de Corrida
+                    </button>
+                </div>
+                
+                <div class="calendar-container">
+                    <div class="calendar-header">Setembro 2025 - Evolução dos Treinos</div>
+                    <div class="calendar" id="client-calendar">
+                        <!-- Calendário será gerado via JavaScript -->
+                    </div>
+                </div>
+                
+                <button class="periodization-btn" onclick="openPeriodization()">
+                    <i class="fas fa-chart-line"></i> Ver Periodização
+                </button>
+            `;
+            
+            renderCalendar();
+            showSection('client-profile');
+        }
+
+        // Abre o treino A ou B
+        function openTraining(type) {
+            const trainingSection = document.getElementById(`training-${type.toLowerCase()}`);
+            trainingSection.innerHTML = `
+                <button class="back-button" onclick="showSection('client-profile')">
+                    <i class="fas fa-arrow-left"></i> Voltar para ${currentClient.name}
+                </button>
+                
+                <div class="profile-header">
+                    <h2>Treino ${type} - ${currentClient.name}</h2>
+                    <p>Marque os exercícios conforme for concluindo</p>
+                </div>
+                
+                <div class="exercise-list">
+                    ${trainingData[type].map((exercise, index) => `
+                        <div class="exercise-item">
+                            <div class="exercise-checkbox" onclick="toggleExercise(this, '${type}', ${index})"></div>
+                            <div class="exercise-details">
+                                <h4>${exercise.exercise}</h4>
+                                <div class="exercise-meta">
+                                    <span>${exercise.series} Séries</span>
+                                    <span>${exercise.reps} Reps</span>
+                                    <span>${exercise.recovery}</span>
+                                    ${exercise.load ? `<span>Carga: ${exercise.load}</span>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            
+            showSection(`training-${type.toLowerCase()}`);
+        }
+
+        // Abre a tela de treinos de corrida
+        function openRunningTraining() {
+            const runningTraining = document.getElementById('running-training');
+            runningTraining.innerHTML = `
+                <button class="back-button" onclick="showSection('client-profile')">
+                    <i class="fas fa-arrow-left"></i> Voltar para ${currentClient.name}
+                </button>
+                
+                <div class="profile-header">
+                    <h2>Treinos de Corrida - ${currentClient.name}</h2>
+                </div>
+                
+                <div class="running-workouts">
+                    ${runningWorkouts.map(workout => `
+                        <div class="workout-item" onclick="openRunningWorkout(${workout.id})">
+                            <div class="workout-header">
+                                <div class="workout-title">${workout.name}</div>
+                                <div class="workout-date">${workout.date}</div>
+                            </div>
+                            <div class="workout-details">${workout.description}</div>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <div class="calendar-container">
+                    <div class="calendar-header">Calendário de Corrida - Setembro 2025</div>
+                    <div class="calendar" id="running-calendar">
+                        <!-- Calendário de corrida será gerado via JavaScript -->
+                    </div>
+                </div>
+            `;
+            
+            renderRunningCalendar();
+            showSection('running-training');
+        }
+
+        // Abre os detalhes do treino de corrida
+        function openRunningWorkout(workoutId) {
+            currentWorkout = runningWorkouts.find(w => w.id === workoutId);
+            
+            const runningDetail = document.getElementById('running-detail');
+            runningDetail.innerHTML = `
+                <button class="back-button" onclick="showSection('running-training')">
+                    <i class="fas fa-arrow-left"></i> Voltar para Treinos de Corrida
+                </button>
+                
+                <div class="profile-header">
+                    <h2>${currentWorkout.name}</h2>
+                    <p>${currentWorkout.date}</p>
+                </div>
+                
+                <div class="workout-detail">
+                    <h3>${currentWorkout.description}</h3>
+                    
+                    <div class="workout-stats">
+                        <div class="stat-item">
+                            <div class="stat-label">Tempo Total</div>
+                            <div class="stat-value">${currentWorkout.duration}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Velocidade</div>
+                            <div class="stat-value">${currentWorkout.speed}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Pace</div>
+                            <div class="stat-value">${currentWorkout.pace}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">FC Alvo</div>
+                            <div class="stat-value">${currentWorkout.fcTarget}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="exercise-list">
+                        <div class="exercise-item">
+                            <div class="exercise-checkbox" onclick="toggleRunningWorkout(this)"></div>
+                            <div class="exercise-details">
+                                <h4>Treino Concluído</h4>
+                                <div class="exercise-meta">
+                                    <span>Marque quando completar este treino</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            showSection('running-detail');
+        }
+
+        // Abre a periodização
+        function openPeriodization() {
+            const periodizationSection = document.getElementById('periodization');
+            periodizationSection.innerHTML = `
+                <button class="back-button" onclick="showSection('client-profile')">
+                    <i class="fas fa-arrow-left"></i> Voltar para ${currentClient.name}
+                </button>
+                
+                <div class="profile-header">
+                    <h2>Periodização - ${currentClient.name}</h2>
+                </div>
+                
+                <table class="periodization-table">
+                    <thead>
+                        <tr>
+                            <th>Semanas</th>
+                            <th>Fases</th>
+                            <th>Métodos</th>
+                            <th>Repetições</th>
+                            <th>Volume</th>
+                            <th>Intensidade</th>
+                            <th>Recuperação</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${periodizationData.map(item => `
+                            <tr>
+                                <td>${item.semanas}</td>
+                                <td>${item.fases}</td>
+                                <td>${item.metodos}</td>
+                                <td>${item.repeticoes}</td>
+                                <td>${item.volume}</td>
+                                <td>${item.intensidade}</td>
+                                <td>${item.recuperacao}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+            
+            showSection('periodization');
+        }
+
+        // Renderiza o calendário de musculação (A e B)
+        function renderCalendar() {
+            const calendarEl = document.getElementById('client-calendar');
+            if (!calendarEl) return;
+            
+            calendarEl.innerHTML = '';
+            
+            // Cabeçalhos dos dias da semana
+            const days = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+            days.forEach(day => {
+                const dayHeader = document.createElement('div');
+                dayHeader.className = 'day-header';
+                dayHeader.textContent = day;
+                calendarEl.appendChild(dayHeader);
+            });
+            
+            // Dias do mês (Setembro 2025)
+            const firstDay = new Date(2025, 8, 1).getDay(); // 0 = Domingo
+            const daysInMonth = 30;
+            
+            // Dias vazios no início
+            for (let i = 0; i < firstDay; i++) {
+                const emptyDay = document.createElement('div');
+                emptyDay.className = 'calendar-day';
+                emptyDay.innerHTML = '<div class="day-number"></div>';
+                calendarEl.appendChild(emptyDay);
+            }
+            
+            // Dias do mês
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayEl = document.createElement('div');
+                dayEl.className = 'calendar-day';
+                
+                // Simulação de treinos A e B (alternando)
+                const hasWorkout = day % 2 === 0 || day % 3 === 0; // Mais dias com treino
+                const workoutType = hasWorkout ? (day % 2 === 0 ? 'A' : 'B') : '';
+                const isCompleted = hasWorkout && day < new Date().getDate();
+                const isMissed = hasWorkout && day < new Date().getDate() && !isCompleted;
+                
+                dayEl.innerHTML = `
+                    <div class="day-number">${day}</div>
+                    ${hasWorkout ? `<div class="day-training">${workoutType}</div>` : ''}
+                    ${hasWorkout ? `<div class="day-status ${isCompleted ? 'status-completed' : isMissed ? 'status-missed' : 'status-scheduled'}"></div>` : ''}
+                `;
+                
+                calendarEl.appendChild(dayEl);
+            }
+        }
+
+        // Renderiza o calendário de corrida
+        function renderRunningCalendar() {
+            const calendarEl = document.getElementById('running-calendar');
+            if (!calendarEl) return;
+            
+            calendarEl.innerHTML = '';
+            
+            // Cabeçalhos dos dias da semana
+            const days = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+            days.forEach(day => {
+                const dayHeader = document.createElement('div');
+                dayHeader.className = 'day-header';
+                dayHeader.textContent = day;
+                calendarEl.appendChild(dayHeader);
+            });
+            
+            // Dias do mês (Setembro 2025)
+            const firstDay = new Date(2025, 8, 1).getDay();
+            const daysInMonth = 30;
+            
+            // Dias vazios no início
+            for (let i = 0; i < firstDay; i++) {
+                const emptyDay = document.createElement('div');
+                emptyDay.className = 'calendar-day';
+                emptyDay.innerHTML = '<div class="day-number"></div>';
+                calendarEl.appendChild(emptyDay);
+            }
+            
+            // Dias do mês
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayEl = document.createElement('div');
+                dayEl.className = 'calendar-day';
+                
+                // Simulação de treinos de corrida
+                const hasRunning = day % 4 === 0; // Treinos de corrida
+                const isCompleted = hasRunning && day < new Date().getDate();
+                const isMissed = hasRunning && day < new Date().getDate() && !isCompleted;
+                
+                dayEl.innerHTML = `
+                    <div class="day-number">${day}</div>
+                    ${hasRunning ? `<div class="day-training">CORRIDA</div>` : ''}
+                    ${hasRunning ? `<div class="day-status ${isCompleted ? 'status-completed' : isMissed ? 'status-missed' : 'status-scheduled'}"></div>` : ''}
+                `;
+                
+                calendarEl.appendChild(dayEl);
+            }
+        }
+
+        // Alterna o estado do exercício
+        function toggleExercise(checkbox, type, index) {
+            checkbox.classList.toggle('checked');
+            // Aqui você salvaria no backend o estado do exercício
+        }
+
+        // Alterna o estado do treino de corrida
+        function toggleRunningWorkout(checkbox) {
+            checkbox.classList.toggle('checked');
+            // Aqui você salvaria no backend o estado do treino
+        }
+
+        // Mostra uma seção específica
+        function showSection(sectionId) {
+            contentSections.forEach(section => {
+                section.classList.remove('active');
+                if (section.id === sectionId) {
+                    section.classList.add('active');
+                }
+            });
+        }
+
+        // Inicializa a aplicação
+        init();
+    </script>
+</body>
+</html>
